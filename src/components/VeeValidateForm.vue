@@ -72,8 +72,9 @@ export default {
             await axios.post('http://localhost:8000/api/students', this.formData)
             .then( response => {
                 if(response.status === 201){
-                    this.students.push(response.data);              
-                    this.$nextTick(() => this.$refs.addForm.reset());    
+                    this.formData.name = this.formData.roll = this.formData.mobile = this.formData.email = '';
+                    this.$nextTick(() => this.$refs.addForm.reset()); 
+                    this.students.push(response.data);                 
                     this.$toast.success('Student Created Successfully');  
                 } else {
                     this.$toast.error('Sorry, something went wrong');
