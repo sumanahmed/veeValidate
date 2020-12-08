@@ -12,6 +12,7 @@
     "bootstrap": "^4.5.3",
     "bootstrap-vue": "^2.20.1",
     "core-js": "^3.6.5",
+    "cxlt-vue2-toastr": "^1.1.1",
     "vee-validate": "^3.4.5",
     "vue": "^2.6.12"
   },
