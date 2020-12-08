@@ -1,74 +1,93 @@
 <template>
-  <div>
-      <h2>VeeValidate Form</h2>
-      <ValidationObserver v-slot="{ handleSubmit }">
-          <form @submit.prevent="handleSubmit(onSubmit)" class="col-sm-6 offset-sm-3">
+    <div>
+        <b-row>
+            <b-col>
+                <h2 class="text-center mb-2">VeeValidate Form</h2>
+                <ValidationObserver v-slot="{ handleSubmit, reset }" ref="addForm">
+                    <form @submit.prevent="handleSubmit(onSubmit)" class="col-sm-6 offset-sm-3" autocomplete="off"  @reset.prevent="reset">
 
-                <ValidationProvider name="Name" rules="required|alpha" v-slot="{errors}" class="mt-5">
-                    <div class="form-group">
-                        <label>Name</label>
-                        <input type="text" v-model="formData.name" class="form-control" />
-                        <span class="text-danger">{{ errors[0] }}</span>
-                    </div>
-                </ValidationProvider>
+                        <ValidationProvider name="name" rules="required|alpha" v-slot="{errors}" class="mt-5">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" v-model="formData.name" class="form-control" />
+                                <span class="text-danger">{{ errors[0] }}</span>
+                            </div>
+                        </ValidationProvider>
 
-                <ValidationProvider name="E-mail" rules="required|email" v-slot="{errors}">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" v-model="formData.email" class="form-control" />
-                        <span class="text-danger">{{ errors[0] }}</span>
-                    </div>
-                </ValidationProvider>
+                        <ValidationProvider name="roll" rules="required" v-slot="{errors}">
+                            <div class="form-group">
+                                <label>Roll</label>
+                                <input type="text" v-model="formData.roll" class="form-control" />
+                                <span class="text-danger">{{ errors[0] }}</span>
+                            </div>
+                        </ValidationProvider>
 
-                <ValidationProvider name="Password" rules="required|max:12|min:6" v-slot="{errors}">
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" v-model="formData.password" class="form-control" />
-                        <span class="text-danger">{{ errors[0] }}</span>
-                    </div>
-                </ValidationProvider>
+                        <ValidationProvider name="mobile" rules="required" v-slot="{errors}">
+                            <div class="form-group">
+                                <label>Mobile</label>
+                                <input type="text" v-model="formData.mobile" class="form-control" />
+                                <span class="text-danger">{{ errors[0] }}</span>
+                            </div>
+                        </ValidationProvider>
 
-                <ValidationProvider name="Gender" rules="required" v-slot="{errors}">
-                    <div class="form-group">
-                        <label>Gender</label>                        
-                        <select class="form-control" v-model="formData.gender">
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <span class="text-danger">{{ errors[0] }}</span>
-                    </div>
-                </ValidationProvider>
+                        <ValidationProvider name="email" rules="required|email" v-slot="{errors}">
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" v-model="formData.email" class="form-control" />
+                                <span class="text-danger">{{ errors[0] }}</span>
+                            </div>
+                        </ValidationProvider>
 
-                <ValidationProvider name="Accept Terms" rules="required" v-slot="{errors}">
-                    <div class="form-check">
-                        <input type="checkbox" v-model="formData.acceptTerms" class="form-check-input mr-2" /> 
-                        <label class="form-check-label">Accept Terms</label>    
-                    </div>                      
-                    <span class="text-danger">{{ errors[0] }}</span><br/>
-                </ValidationProvider>
-                <input type="submit" value="Submit" class="btn btn-primary mt-3"/>
-          </form>
-      </ValidationObserver>
-  </div>
+                        <input type="submit" value="Submit" class="btn btn-primary" style="margin-right:10px;"/>
+                        <input type="reset" value="Reset" class="btn btn-warning"/>
+                    </form>
+                </ValidationObserver>
+            </b-col>
+            <b-col>
+                <b-table striped hover :items="students"></b-table>
+            </b-col>
+        </b-row>        
+    </div>
 </template>
 
 <script>
+import axios from 'axios'
 export default {
     data() {
         return {
             formData : {
                 name: '',
+                roll: '',
+                mobile: '',
                 email: '',
-                password: '',
-                gender: '',
-                acceptTerms: null,
-            }
+            },
+            students:[],
         }
     },
+    mounted() {
+        this.getStudents();
+    },
     methods: {
-        onSubmit() {
-            console.log(this.formData);
+        async onSubmit() {
+            await axios.post('http://localhost:8000/api/students', this.formData)
+            .then( response => {
+                this.students.push(response.data);                
+                this.$nextTick(() => this.$refs.addForm.reset());    
+            })
+            .catch( error => {                              
+                if (error.response.status === 422) {
+                    this.$refs.addForm.setErrors(error.response.data.errors);
+                }                
+            });
+        },
+        async getStudents(){
+            await axios.get('http://localhost:8000/api/students')
+            .then( response => {
+                this.students = response.data;
+            })
+            .catch( error => {
+                console.log(error);
+            });
         }
     }
 }
